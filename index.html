@@ -1,24 +1,423 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ko" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Number Drawing</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로또 번호 추천기 (반응형)</title>
+
+  <style>
+    :root{
+      --radius: 22px;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --primary: linear-gradient(90deg, #ff2d95, #7a5cff, #00e5ff);
+    }
+
+    html[data-theme="dark"]{
+      --bg-main:
+        radial-gradient(1100px 700px at 12% 18%, rgba(255, 0, 150, .35), transparent 62%),
+        radial-gradient(900px 600px at 85% 15%, rgba(0, 255, 200, .25), transparent 55%),
+        radial-gradient(1000px 700px at 70% 90%, rgba(120, 60, 255, .30), transparent 60%),
+        linear-gradient(180deg, #070a14, #0b1020);
+      --card-bg: rgba(255,255,255,.10);
+      --card-bg-2: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.14);
+      --text: #eef2ff;
+      --muted: rgba(238,242,255,.72);
+      --row-bg: rgba(0,0,0,.20);
+    }
+
+    html[data-theme="light"]{
+      --bg-main:
+        radial-gradient(900px 600px at 20% 20%, rgba(255,45,149,.18), transparent 55%),
+        radial-gradient(900px 600px at 80% 10%, rgba(0,229,255,.18), transparent 55%),
+        linear-gradient(180deg, #f4f7ff, #ffffff);
+      --card-bg: rgba(255,255,255,.88);
+      --card-bg-2: rgba(255,255,255,.70);
+      --stroke: rgba(0,0,0,.08);
+      --text: #111827;
+      --muted: rgba(17,24,39,.60);
+      --row-bg: rgba(0,0,0,.04);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding: 18px;
+      background: var(--bg-main);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+    }
+
+    .wrap{
+      width: min(920px, 100%);
+      padding: 22px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card-bg), var(--card-bg-2));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+
+    .sub{
+      margin: 6px 0 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 58ch;
+    }
+
+    .controls{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .row{
+      margin: 16px 0 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    button{
+      border: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 800;
+      color: var(--text);
+      transition: transform .05s ease, filter .2s ease;
+      user-select:none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* 모바일 터치 영역 */
+    }
+    button:active{ transform: translateY(1px); }
+
+    .primary{
+      background: var(--primary);
+      box-shadow: 0 12px 30px rgba(255,45,149,.18);
+    }
+    .primary:hover{ filter: brightness(1.05); }
+
+    .ghost{
+      background: transparent;
+      border: 1px solid var(--stroke);
+      color: var(--text);
+    }
+    .ghost:hover{ filter: brightness(1.05); }
+
+    .ghost:disabled{
+      opacity: .55;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .results{
+      display:grid;
+      gap: 12px;
+    }
+
+    .set{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      padding: 14px;
+      border-radius: 18px;
+      background: var(--row-bg);
+      border: 1px solid var(--stroke);
+      overflow: hidden;
+    }
+
+    .label{
+      min-width: 92px;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 9px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      text-align:center;
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      flex: 0 0 auto;
+    }
+
+    .balls{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      flex: 1 1 auto;
+    }
+
+    .ball{
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display:grid;
+      place-items:center;
+      font-weight: 900;
+      font-size: 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 24px rgba(0,0,0,.22);
+      flex: 0 0 auto;
+    }
+
+    .meta{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .pill{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+    }
+
+    /* =========================
+       RESPONSIVE (모바일)
+    ========================= */
+    @media (max-width: 640px){
+      body{ padding: 14px; }
+      .wrap{ padding: 16px; border-radius: 18px; }
+
+      h1{ font-size: 20px; }
+      .sub{ font-size: 13px; }
+
+      .top{
+        align-items: stretch;
+      }
+      .controls{
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .row{
+        gap: 8px;
+      }
+
+      /* 버튼은 모바일에서 2열 느낌으로 꽉 차게 */
+      .row button{
+        flex: 1 1 160px;
+      }
+      .controls button{
+        flex: 0 0 auto;
+      }
+
+      /* 세트는 세로로 쌓이게 */
+      .set{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .label{
+        min-width: auto;
+        padding: 8px 10px;
+      }
+
+      /* 공이 너무 커서 줄바꿈이 과하면 살짝 축소 */
+      .ball{
+        width: 42px;
+        height: 42px;
+        font-size: 15px;
+      }
+      .balls{
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 360px){
+      .ball{
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Lotto Number Drawing</h1>
-        <div class="lotto-numbers">
-            <span class="number"></span>
-            <span class="number"></span>
-            <span class="number"></span>
-            <span class="number"></span>
-            <span class="number"></span>
-            <span class="number"></span>
-        </div>
-        <button id="draw-btn">Start Drawing</button>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>로또 번호 추천기</h1>
+        <p class="sub">버튼을 누르면 1~45 중 중복 없이 6개씩, 5게임이 한 번에 생성됩니다.</p>
+      </div>
+
+      <div class="controls">
+        <button class="ghost" id="themeToggle" aria-label="테마 전환">🌙 다크모드</button>
+      </div>
     </div>
-    <script src="main.js"></script>
+
+    <div class="row">
+      <button class="primary" id="pickBtn">🎲 5게임 생성</button>
+      <button class="ghost" id="copyBtn" disabled>📋 전체 복사</button>
+      <button class="ghost" id="clearBtn">🧼 초기화</button>
+    </div>
+
+    <div class="results" id="results">
+      <div class="set">
+        <div class="label">안내</div>
+        <div class="balls" style="color: var(--muted);">아직 생성된 번호가 없습니다.</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <span class="pill" id="status">상태: 대기</span>
+      <span class="pill" id="timeInfo">생성 시간: -</span>
+    </div>
+  </div>
+
+  <script>
+    const html = document.documentElement;
+
+    const themeToggle = document.getElementById("themeToggle");
+    const pickBtn = document.getElementById("pickBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const results = document.getElementById("results");
+    const statusEl = document.getElementById("status");
+    const timeInfo = document.getElementById("timeInfo");
+
+    let lastSets = null;
+
+    function pickOneSet(){
+      const s = new Set();
+      while(s.size < 6) s.add(Math.floor(Math.random() * 45) + 1);
+      return [...s].sort((a,b)=>a-b);
+    }
+
+    function pickFiveSets(){
+      const out = [];
+      for(let i=0;i<5;i++) out.push(pickOneSet());
+      return out;
+    }
+
+    function ballBg(n){
+      // 컬러풀 + 하이라이트
+      if(n<=10) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ffd84a,#ff8a00)";
+      if(n<=20) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#46d6ff,#2f6bff)";
+      if(n<=30) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ff6b6b,#e7006a)";
+      if(n<=40) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 36%), linear-gradient(180deg,#cfd3da,#6f7786)";
+      return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#67ffb5,#17b86b)";
+    }
+
+    function render(sets){
+      results.innerHTML = "";
+      sets.forEach((nums, idx) => {
+        const row = document.createElement("div");
+        row.className = "set";
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.textContent = `${idx+1}번 게임`;
+
+        const balls = document.createElement("div");
+        balls.className = "balls";
+
+        nums.forEach(n => {
+          const b = document.createElement("div");
+          b.className = "ball";
+          b.textContent = n;
+          b.style.background = ballBg(n);
+          balls.appendChild(b);
+        });
+
+        row.appendChild(label);
+        row.appendChild(balls);
+        results.appendChild(row);
+      });
+    }
+
+    function updateMeta(){
+      const now = new Date();
+      timeInfo.textContent = "생성 시간: " + now.toLocaleString("ko-KR");
+      statusEl.textContent = "상태: 생성 완료 ✅";
+    }
+
+    async function copyToClipboard(text){
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    }
+
+    pickBtn.addEventListener("click", () => {
+      lastSets = pickFiveSets();
+      render(lastSets);
+      updateMeta();
+      copyBtn.disabled = false;
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      if(!lastSets) return;
+      const text = lastSets.map((s,i)=>`${i+1}번: ${s.join(", ")}`).join("\n");
+      try{
+        await copyToClipboard(text);
+        statusEl.textContent = "상태: 복사 완료 📋✅";
+      }catch(e){
+        statusEl.textContent = "상태: 복사 실패 ❌";
+        alert("복사에 실패했습니다. 아래 텍스트를 직접 복사해 주세요:\n\n" + text);
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      lastSets = null;
+      results.innerHTML = `
+        <div class="set">
+          <div class="label">안내</div>
+          <div class="balls" style="color: var(--muted);">아직 생성된 번호가 없습니다.</div>
+        </div>
+      `;
+      copyBtn.disabled = true;
+      statusEl.textContent = "상태: 대기";
+      timeInfo.textContent = "생성 시간: -";
+    });
+
+    themeToggle.addEventListener("click", () => {
+      const isDark = html.dataset.theme === "dark";
+      html.dataset.theme = isDark ? "light" : "dark";
+      themeToggle.textContent = isDark ? "☀️ 화이트모드" : "🌙 다크모드";
+    });
+  </script>
 </body>
 </html>
