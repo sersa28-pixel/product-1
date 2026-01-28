@@ -262,88 +262,6 @@
       }
     }
 
-    .freepik{
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: calc(var(--radius) - 6px);
-      border: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.04));
-    }
-
-    .freepik h2{
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: -0.2px;
-    }
-
-    .freepik .row{
-      margin-top: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .freepik input{
-      flex: 1 1 220px;
-      min-width: 160px;
-      padding: 12px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--card-bg);
-      color: var(--text);
-      outline: none;
-    }
-
-    .freepik input::placeholder{
-      color: var(--muted);
-    }
-
-    .freepik-status{
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .freepik-grid{
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 10px;
-    }
-
-    .freepik-card{
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid var(--stroke);
-      background: rgba(0,0,0,.08);
-    }
-
-    .freepik-card img{
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .freepik-card .fp-meta{
-      padding: 8px 10px;
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .freepik-card .fp-meta a{
-      color: inherit;
-      text-decoration: none;
-      border-bottom: 1px dotted var(--stroke);
-    }
-
-    .freepik-note{
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-    }
   </style>
 </head>
 
@@ -378,21 +296,6 @@
       <span class="pill" id="timeInfo">생성 시간: -</span>
     </div>
 
-    <section class="freepik" aria-label="Freepik 이미지 추천">
-      <div>
-        <h2>Freepik 이미지 추천</h2>
-        <p class="sub">키워드로 무료/프리미엄 이미지를 검색합니다.</p>
-      </div>
-
-      <div class="row">
-        <input id="fpTerm" type="text" placeholder="예: 로또, 행운, 당첨" autocomplete="off" />
-        <button class="ghost" id="fpSearchBtn">🔎 이미지 검색</button>
-      </div>
-
-      <div class="freepik-status" id="fpStatus">상태: 대기</div>
-      <div class="freepik-grid" id="fpGrid"></div>
-      <div class="freepik-note">이미지는 Freepik API로 제공되며, 사용 전 라이선스를 확인하세요.</div>
-    </section>
   </div>
 
   <script>
@@ -406,11 +309,6 @@
     const results = document.getElementById("results");
     const statusEl = document.getElementById("status");
     const timeInfo = document.getElementById("timeInfo");
-
-    const fpTerm = document.getElementById("fpTerm");
-    const fpSearchBtn = document.getElementById("fpSearchBtn");
-    const fpStatus = document.getElementById("fpStatus");
-    const fpGrid = document.getElementById("fpGrid");
 
     let lastSets = null;
 
@@ -523,94 +421,6 @@
       themeToggle.textContent = isDark ? "☀️ 화이트모드" : "🌙 다크모드";
     });
 
-    function renderFreepikItems(items){
-      fpGrid.innerHTML = "";
-      if(!items || items.length === 0){
-        fpStatus.textContent = "상태: 결과 없음";
-        return;
-      }
-
-      const usable = items
-        .map(item => {
-          const imgUrl = item?.image?.source?.url || item?.preview?.url;
-          if(!imgUrl) return null;
-          return {
-            imgUrl,
-            author: item?.author?.name || "Freepik",
-            url: item?.url || ""
-          };
-        })
-        .filter(Boolean);
-
-      if(usable.length === 0){
-        fpStatus.textContent = "상태: 표시할 이미지가 없습니다.";
-        return;
-      }
-
-      fpStatus.textContent = `상태: ${usable.length}개 로드됨`;
-      usable.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "freepik-card";
-
-        const img = document.createElement("img");
-        img.src = item.imgUrl;
-        img.alt = "Freepik 이미지";
-        img.loading = "lazy";
-
-        const meta = document.createElement("div");
-        meta.className = "fp-meta";
-
-        const author = document.createElement("span");
-        author.textContent = item.author;
-
-        const link = document.createElement("a");
-        link.textContent = item.url ? "원본 보기" : "Freepik";
-        link.href = item.url || "https://www.freepik.com";
-        link.target = "_blank";
-        link.rel = "noreferrer";
-
-        meta.appendChild(author);
-        meta.appendChild(link);
-
-        card.appendChild(img);
-        card.appendChild(meta);
-        fpGrid.appendChild(card);
-      });
-    }
-
-    async function searchFreepik(term){
-      const q = term || "로또";
-      fpStatus.textContent = "상태: 로딩 중...";
-      fpGrid.innerHTML = "";
-      try{
-        const res = await fetch(`/api/freepik?term=${encodeURIComponent(q)}&limit=8`);
-        const data = await res.json();
-        if(!res.ok){
-          fpStatus.textContent = "상태: 오류 발생";
-          console.error("Freepik error:", data);
-          return;
-        }
-        renderFreepikItems(Array.isArray(data?.data) ? data.data : []);
-      }catch(e){
-        fpStatus.textContent = "상태: 네트워크 오류";
-        console.error(e);
-      }
-    }
-
-    fpSearchBtn.addEventListener("click", () => {
-      const term = fpTerm.value.trim();
-      searchFreepik(term);
-    });
-
-    fpTerm.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
-        e.preventDefault();
-        const term = fpTerm.value.trim();
-        searchFreepik(term);
-      }
-    });
-
-    searchFreepik("로또");
   </script>
 </body>
 </html>
