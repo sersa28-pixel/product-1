@@ -201,6 +201,20 @@
       background: rgba(255,255,255,.08);
     }
 
+    .comments{
+      margin-top: 22px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: var(--row-bg);
+    }
+
+    .comments h2{
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      letter-spacing: -0.2px;
+    }
+
     /* =========================
        RESPONSIVE (모바일)
     ========================= */
@@ -269,19 +283,20 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <h1>주희의 로또 번호 추천기</h1>
-        <p class="sub">버튼을 누르면 1~45 중 중복 없이 6개씩, 5게임이 한 번에 생성됩니다.</p>
+        <h1 data-i18n="title">주희의 로또 번호 추천기</h1>
+        <p class="sub" data-i18n="subtitle">버튼을 누르면 1~45 중 중복 없이 6개씩, 5게임이 한 번에 생성됩니다.</p>
       </div>
 
       <div class="controls">
         <button class="ghost" id="themeToggle" aria-label="테마 전환">🌙 다크모드</button>
+        <button class="ghost" id="langToggle" aria-label="언어 전환">🇺🇸 English</button>
       </div>
     </div>
 
     <div class="row">
-      <button class="primary" id="pickBtn">🎲 5게임 생성</button>
-      <button class="ghost" id="copyBtn" disabled>📋 전체 복사</button>
-      <button class="ghost" id="clearBtn">🧼 초기화</button>
+      <button class="primary" id="pickBtn" data-i18n="pick">🎲 5게임 생성</button>
+      <button class="ghost" id="copyBtn" data-i18n="copyAll" disabled>📋 전체 복사</button>
+      <button class="ghost" id="clearBtn" data-i18n="reset">🧼 초기화</button>
     </div>
 
     <div class="results" id="results">
@@ -296,131 +311,30 @@
       <span class="pill" id="timeInfo">생성 시간: -</span>
     </div>
 
+    <div class="comments">
+      <h2 data-i18n="comments">댓글</h2>
+      <div id="disqus_thread"></div>
+    </div>
+
   </div>
 
   <script>
-    const html = document.documentElement;
-
-    const themeToggle = document.getElementById("themeToggle");
-    const pickBtn = document.getElementById("pickBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const clearBtn = document.getElementById("clearBtn");
-
-    const results = document.getElementById("results");
-    const statusEl = document.getElementById("status");
-    const timeInfo = document.getElementById("timeInfo");
-
-    let lastSets = null;
-
-    function pickOneSet(){
-      const s = new Set();
-      while(s.size < 6) s.add(Math.floor(Math.random() * 45) + 1);
-      return [...s].sort((a,b)=>a-b);
-    }
-
-    function pickFiveSets(){
-      const out = [];
-      for(let i=0;i<5;i++) out.push(pickOneSet());
-      return out;
-    }
-
-    function ballBg(n){
-      // 컬러풀 + 하이라이트
-      if(n<=10) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ffd84a,#ff8a00)";
-      if(n<=20) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#46d6ff,#2f6bff)";
-      if(n<=30) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ff6b6b,#e7006a)";
-      if(n<=40) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 36%), linear-gradient(180deg,#cfd3da,#6f7786)";
-      return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#67ffb5,#17b86b)";
-    }
-
-    function render(sets){
-      results.innerHTML = "";
-      sets.forEach((nums, idx) => {
-        const row = document.createElement("div");
-        row.className = "set";
-
-        const label = document.createElement("div");
-        label.className = "label";
-        label.textContent = `${idx+1}번 게임`;
-
-        const balls = document.createElement("div");
-        balls.className = "balls";
-
-        nums.forEach(n => {
-          const b = document.createElement("div");
-          b.className = "ball";
-          b.textContent = n;
-          b.style.background = ballBg(n);
-          balls.appendChild(b);
-        });
-
-        row.appendChild(label);
-        row.appendChild(balls);
-        results.appendChild(row);
-      });
-    }
-
-    function updateMeta(){
-      const now = new Date();
-      timeInfo.textContent = "생성 시간: " + now.toLocaleString("ko-KR");
-      statusEl.textContent = "상태: 생성 완료 ✅";
-    }
-
-    async function copyToClipboard(text){
-      if(navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      const ok = document.execCommand("copy");
-      ta.remove();
-      return ok;
-    }
-
-    pickBtn.addEventListener("click", () => {
-      lastSets = pickFiveSets();
-      render(lastSets);
-      updateMeta();
-      copyBtn.disabled = false;
-    });
-
-    copyBtn.addEventListener("click", async () => {
-      if(!lastSets) return;
-      const text = lastSets.map((s,i)=>`${i+1}번: ${s.join(", ")}`).join("\n");
-      try{
-        await copyToClipboard(text);
-        statusEl.textContent = "상태: 복사 완료 📋✅";
-      }catch(e){
-        statusEl.textContent = "상태: 복사 실패 ❌";
-        alert("복사에 실패했습니다. 아래 텍스트를 직접 복사해 주세요:\n\n" + text);
-      }
-    });
-
-    clearBtn.addEventListener("click", () => {
-      lastSets = null;
-      results.innerHTML = `
-        <div class="set">
-          <div class="label">안내</div>
-          <div class="balls" style="color: var(--muted);">아직 생성된 번호가 없습니다.</div>
-        </div>
-      `;
-      copyBtn.disabled = true;
-      statusEl.textContent = "상태: 대기";
-      timeInfo.textContent = "생성 시간: -";
-    });
-
-    themeToggle.addEventListener("click", () => {
-      const isDark = html.dataset.theme === "dark";
-      html.dataset.theme = isDark ? "light" : "dark";
-      themeToggle.textContent = isDark ? "☀️ 화이트모드" : "🌙 다크모드";
-    });
-
+      /**
+      *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+      *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+      var disqus_config = function () {
+      this.page.url = "https://product-1-81p.pages.dev/";  // canonical URL
+      this.page.identifier = "product-1-81p-home"; // unique identifier
+      };
+      (function() { // DON'T EDIT BELOW THIS LINE
+      var d = document, s = d.createElement('script');
+      s.src = 'https://jin-tae.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      })();
   </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  <script src="main.js"></script>
 </body>
 </html>
