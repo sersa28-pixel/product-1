@@ -1,26 +1,30 @@
 (() => {
-  const html = document.documentElement;
-  const themeToggle = document.getElementById("themeToggle");
   const startBtn = document.getElementById("startBtn");
   const stopBtn = document.getElementById("stopBtn");
   const webcamContainer = document.getElementById("webcam-container");
   const labelContainer = document.getElementById("label-container");
   const resultMain = document.getElementById("resultMain");
-  const statusEl = document.getElementById("status");
-  const timeInfo = document.getElementById("timeInfo");
+  const statusEl = document.getElementById("statusAnimal");
+  const timeInfo = document.getElementById("timeInfoAnimal");
+
+  if (
+    !startBtn ||
+    !stopBtn ||
+    !webcamContainer ||
+    !labelContainer ||
+    !resultMain ||
+    !statusEl ||
+    !timeInfo
+  ) {
+    return;
+  }
 
   const URL = "https://teachablemachine.withgoogle.com/models/gcEeK1LAZK/";
 
   let model;
   let webcam;
-  let maxPredictions = 0;
   let animationId = null;
   let running = false;
-
-  function setThemeToggleLabel() {
-    const isDark = html.dataset.theme === "dark";
-    themeToggle.textContent = isDark ? "🌙 다크모드" : "☀️ 화이트모드";
-  }
 
   function setStatus(text) {
     statusEl.textContent = text;
@@ -70,7 +74,6 @@
       const metadataURL = URL + "metadata.json";
 
       model = await tmImage.load(modelURL, metadataURL);
-      maxPredictions = model.getTotalClasses();
 
       const flip = true;
       webcam = new tmImage.Webcam(320, 320, flip);
@@ -134,12 +137,4 @@
 
   startBtn.addEventListener("click", init);
   stopBtn.addEventListener("click", stop);
-
-  themeToggle.addEventListener("click", () => {
-    const isDark = html.dataset.theme === "dark";
-    html.dataset.theme = isDark ? "light" : "dark";
-    setThemeToggleLabel();
-  });
-
-  setThemeToggleLabel();
 })();
