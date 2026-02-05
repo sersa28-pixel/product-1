@@ -229,21 +229,39 @@
       background: var(--row-bg);
     }
 
-    .cam-box{
+    .file-box{
       display:grid;
-      place-items:center;
-      padding: 10px;
+      gap: 12px;
+      padding: 12px;
       border-radius: 16px;
       border: 1px dashed var(--stroke);
       min-height: 320px;
     }
 
-    #webcam-container canvas{
+    .file-input{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .file-input input[type="file"]{
       width: 100%;
-      height: auto;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .preview{
+      width: 100%;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,.12);
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      object-fit: cover;
+      max-height: 320px;
     }
 
     .result-title{
@@ -414,22 +432,26 @@
     <div class="top">
       <div>
         <h2>동물상 테스트</h2>
-        <p class="sub">내 얼굴은 강아지상일까, 고양이상일까? 버튼을 누르고 카메라를 허용하면 바로 테스트가 시작됩니다.</p>
+        <p class="sub">사진 파일을 업로드하면 강아지상/고양이상 중 어떤 느낌인지 판단합니다.</p>
       </div>
     </div>
 
     <div class="row">
-      <button class="primary" id="startBtn">🐾 테스트 시작</button>
-      <button class="ghost" id="stopBtn" disabled>⏹️ 일시정지</button>
+      <button class="primary" id="analyzeBtn">🐾 사진 분석</button>
+      <button class="ghost" id="clearAnimalBtn" disabled>🧹 사진 제거</button>
     </div>
 
     <div class="grid">
       <div class="card">
-        <div class="result-title">라이브 카메라</div>
-        <div class="cam-box" id="webcam-container">
-          <div class="pill">카메라를 시작하면 여기에 화면이 보여요</div>
+        <div class="result-title">사진 업로드</div>
+        <div class="file-box" id="image-box">
+          <div class="file-input">
+            <input type="file" id="imageInput" accept="image/*">
+          </div>
+          <img id="preview" class="preview" alt="업로드한 사진 미리보기" hidden>
+          <div class="pill" id="imageHint">사진을 선택하면 미리보기가 표시됩니다.</div>
         </div>
-        <div class="notice">※ 조명이 밝을수록 정확도가 좋아요. 브라우저에서 카메라 접근 허용이 필요합니다.</div>
+        <div class="notice">※ 얼굴이 잘 보이는 사진일수록 정확도가 좋아요. 카메라 접근은 사용하지 않습니다.</div>
       </div>
 
       <div class="card">

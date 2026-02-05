@@ -1,16 +1,20 @@
 (() => {
-  const startBtn = document.getElementById("startBtn");
-  const stopBtn = document.getElementById("stopBtn");
-  const webcamContainer = document.getElementById("webcam-container");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const clearBtn = document.getElementById("clearAnimalBtn");
+  const imageInput = document.getElementById("imageInput");
+  const preview = document.getElementById("preview");
+  const imageHint = document.getElementById("imageHint");
   const labelContainer = document.getElementById("label-container");
   const resultMain = document.getElementById("resultMain");
   const statusEl = document.getElementById("statusAnimal");
   const timeInfo = document.getElementById("timeInfoAnimal");
 
   if (
-    !startBtn ||
-    !stopBtn ||
-    !webcamContainer ||
+    !analyzeBtn ||
+    !clearBtn ||
+    !imageInput ||
+    !preview ||
+    !imageHint ||
     !labelContainer ||
     !resultMain ||
     !statusEl ||
@@ -19,12 +23,11 @@
     return;
   }
 
-  const URL = "https://teachablemachine.withgoogle.com/models/gcEeK1LAZK/";
+  const MODEL_URL = "https://teachablemachine.withgoogle.com/models/gcEeK1LAZK/";
 
   let model;
-  let webcam;
-  let animationId = null;
-  let running = false;
+  let currentObjectUrl = null;
+  let imageReady = false;
 
   function setStatus(text) {
     statusEl.textContent = text;
@@ -65,76 +68,99 @@
     });
   }
 
-  async function init() {
-    if (running) return;
+  function resetPrediction() {
+    resultMain.textContent = "대기 중";
+    labelContainer.innerHTML = "";
+    setStatus("상태: 대기");
+    timeInfo.textContent = "업데이트: -";
+  }
+
+  async function ensureModel() {
+    if (model) return model;
+    setStatus("상태: 모델 로딩 중...");
+    const modelURL = MODEL_URL + "model.json";
+    const metadataURL = MODEL_URL + "metadata.json";
+    model = await tmImage.load(modelURL, metadataURL);
+    return model;
+  }
+
+  async function predictImage() {
+    if (!imageReady) {
+      setStatus("상태: 사진을 먼저 선택해주세요");
+      return;
+    }
     try {
-      setStatus("상태: 모델 로딩 중...");
-
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
-
-      model = await tmImage.load(modelURL, metadataURL);
-
-      const flip = true;
-      webcam = new tmImage.Webcam(320, 320, flip);
-      await webcam.setup();
-      await webcam.play();
-
-      webcamContainer.innerHTML = "";
-      webcamContainer.appendChild(webcam.canvas);
-
-      running = true;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-
+      await ensureModel();
       setStatus("상태: 분석 중 ✅");
-      loop();
+
+      const prediction = await model.predict(preview);
+      const sorted = [...prediction].sort((a, b) => b.probability - a.probability);
+      const top = sorted[0];
+
+      resultMain.textContent = `${top.className} (${(top.probability * 100).toFixed(1)}%)`;
+      renderBars(sorted);
+      setTime();
+      setStatus("상태: 분석 완료 ✅");
     } catch (err) {
       console.error(err);
       const message =
         err && String(err).includes("fetch")
           ? "모델 로딩에 실패했어요"
-          : "카메라 권한을 확인해주세요";
-      setStatus("상태: 시작 실패 ❌");
+          : "이미지 분석에 실패했어요";
       resultMain.textContent = message;
+      setStatus("상태: 분석 실패 ❌");
     }
   }
 
-  function stop() {
-    if (!running) return;
-    running = false;
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
+  function clearImage() {
+    if (currentObjectUrl) {
+      window.URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = null;
+    }
+    imageInput.value = "";
+    preview.hidden = true;
+    preview.src = "";
+    imageHint.hidden = false;
+    imageReady = false;
+    analyzeBtn.disabled = true;
+    clearBtn.disabled = true;
+    resetPrediction();
+  }
 
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-      animationId = null;
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files && imageInput.files[0];
+    if (!file) {
+      clearImage();
+      return;
     }
 
-    if (webcam) {
-      webcam.stop();
+    if (currentObjectUrl) {
+      URL.revokeObjectURL(currentObjectUrl);
     }
 
-    setStatus("상태: 일시정지");
-  }
+    currentObjectUrl = window.URL.createObjectURL(file);
+    preview.src = currentObjectUrl;
+    preview.hidden = false;
+    imageHint.hidden = true;
+    analyzeBtn.disabled = false;
+    clearBtn.disabled = false;
+    imageReady = false;
 
-  async function loop() {
-    if (!running) return;
-    webcam.update();
-    await predict();
-    animationId = window.requestAnimationFrame(loop);
-  }
+    preview.onload = () => {
+      imageReady = true;
+      resetPrediction();
+    };
+  });
 
-  async function predict() {
-    const prediction = await model.predict(webcam.canvas);
-    const sorted = [...prediction].sort((a, b) => b.probability - a.probability);
-    const top = sorted[0];
+  analyzeBtn.addEventListener("click", () => {
+    predictImage();
+  });
 
-    resultMain.textContent = `${top.className} (${(top.probability * 100).toFixed(1)}%)`;
-    renderBars(sorted);
-    setTime();
-  }
+  clearBtn.addEventListener("click", () => {
+    clearImage();
+  });
 
-  startBtn.addEventListener("click", init);
-  stopBtn.addEventListener("click", stop);
+  analyzeBtn.disabled = true;
+  clearBtn.disabled = true;
+  resetPrediction();
 })();
