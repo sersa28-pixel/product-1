@@ -9,7 +9,7 @@
   const statusEl = document.getElementById("status");
   const timeInfo = document.getElementById("timeInfo");
 
-  const URL = "https://teachablemachine.withgoogle.com/models/e8iZvf4BC/";
+  const URL = "https://teachablemachine.withgoogle.com/models/gcEeK1LAZK/";
 
   let model;
   let webcam;
@@ -88,8 +88,12 @@
       loop();
     } catch (err) {
       console.error(err);
-      setStatus("상태: 카메라 접근 실패 ❌");
-      resultMain.textContent = "카메라 권한을 확인해주세요";
+      const message =
+        err && String(err).includes("fetch")
+          ? "모델 로딩에 실패했어요"
+          : "카메라 권한을 확인해주세요";
+      setStatus("상태: 시작 실패 ❌");
+      resultMain.textContent = message;
     }
   }
 
