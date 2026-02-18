@@ -29,13 +29,15 @@
   let currentObjectUrl = null;
   let imageReady = false;
 
-  function setStatus(text) {
-    statusEl.textContent = text;
+  function setStatus(key) {
+    const lang = localStorage.getItem('lang') || 'ko';
+    statusEl.textContent = translations[lang][key];
   }
 
   function setTime() {
     const now = new Date();
-    timeInfo.textContent = "업데이트: " + now.toLocaleString("ko-KR");
+    const lang = localStorage.getItem('lang') || 'ko';
+    timeInfo.textContent = `${translations[lang].animal_update_time}: ` + now.toLocaleString(lang === 'ko' ? "ko-KR" : "en-US");
   }
 
   function renderBars(prediction) {
@@ -69,15 +71,16 @@
   }
 
   function resetPrediction() {
-    resultMain.textContent = "대기 중";
+    const lang = localStorage.getItem('lang') || 'ko';
+    resultMain.textContent = translations[lang].animal_wait;
     labelContainer.innerHTML = "";
-    setStatus("상태: 대기");
-    timeInfo.textContent = "업데이트: -";
+    setStatus("animal_status_wait");
+    timeInfo.textContent = `${translations[lang].animal_update_time}: -`;
   }
 
   async function ensureModel() {
     if (model) return model;
-    setStatus("상태: 모델 로딩 중...");
+    setStatus("animal_status_loading");
     const modelURL = MODEL_URL + "model.json";
     const metadataURL = MODEL_URL + "metadata.json";
     model = await tmImage.load(modelURL, metadataURL);
@@ -86,12 +89,12 @@
 
   async function predictImage() {
     if (!imageReady) {
-      setStatus("상태: 사진을 먼저 선택해주세요");
+      setStatus("animal_status_fail"); // Using a generic fail key, can be more specific
       return;
     }
     try {
       await ensureModel();
-      setStatus("상태: 분석 중 ✅");
+      setStatus("animal_status_analyzing");
 
       const prediction = await model.predict(preview);
       const sorted = [...prediction].sort((a, b) => b.probability - a.probability);
@@ -100,15 +103,16 @@
       resultMain.textContent = `${top.className} (${(top.probability * 100).toFixed(1)}%)`;
       renderBars(sorted);
       setTime();
-      setStatus("상태: 분석 완료 ✅");
+      setStatus("animal_status_done");
     } catch (err) {
       console.error(err);
+      const lang = localStorage.getItem('lang') || 'ko';
       const message =
         err && String(err).includes("fetch")
-          ? "모델 로딩에 실패했어요"
-          : "이미지 분석에 실패했어요";
+          ? "Model loading failed"
+          : "Image analysis failed";
       resultMain.textContent = message;
-      setStatus("상태: 분석 실패 ❌");
+      setStatus("animal_status_fail");
     }
   }
 

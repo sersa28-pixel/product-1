@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>로또 번호 추천기 (반응형)</title>
+  <title data-lang="title">로또 번호 추천기 (반응형)</title>
 
   <style>
     :root{
@@ -400,204 +400,80 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <h1>주희의 로또 번호 추천기</h1>
-        <p class="sub">버튼을 누르면 1~45 중 중복 없이 6개씩, 5게임이 한 번에 생성됩니다.</p>
+        <h1 data-lang="lotto_title">주희의 로또 번호 추천기</h1>
+        <p class="sub" data-lang="lotto_subtitle">버튼을 누르면 1~45 중 중복 없이 6개씩, 5게임이 한 번에 생성됩니다.</p>
       </div>
 
       <div class="controls">
         <button class="ghost" id="themeToggle" aria-label="테마 전환">🌙 다크모드</button>
+        <button class="ghost" id="langKo">🇰🇷 한국어</button>
+        <button class="ghost" id="langEn">🇺🇸 영어</button>
       </div>
     </div>
 
     <div class="row">
-      <button class="primary" id="pickBtn">🎲 5게임 생성</button>
-      <button class="ghost" id="copyBtn" disabled>📋 전체 복사</button>
-      <button class="ghost" id="clearBtn">🧼 초기화</button>
+      <button class="primary" id="pickBtn" data-lang="lotto_generate">🎲 5게임 생성</button>
+      <button class="ghost" id="copyBtn" data-lang="lotto_copy" disabled>📋 전체 복사</button>
+      <button class="ghost" id="clearBtn" data-lang="lotto_clear">🧼 초기화</button>
     </div>
 
     <div class="results" id="results">
       <div class="set">
-        <div class="label">안내</div>
-        <div class="balls" style="color: var(--muted);">아직 생성된 번호가 없습니다.</div>
+        <div class="label" data-lang="lotto_guide">안내</div>
+        <div class="balls" style="color: var(--muted);" data-lang="lotto_no_number">아직 생성된 번호가 없습니다.</div>
       </div>
     </div>
 
     <div class="meta">
-      <span class="pill" id="status">상태: 대기</span>
-      <span class="pill" id="timeInfo">생성 시간: -</span>
+      <span class="pill" id="status" data-lang="lotto_status_wait">상태: 대기</span>
+      <span class="pill" id="timeInfo" data-lang="lotto_gen_time">생성 시간: -</span>
     </div>
 
     <div class="divider"></div>
 
     <div class="top">
       <div>
-        <h2>동물상 테스트</h2>
-        <p class="sub">사진 파일을 업로드하면 강아지상/고양이상 중 어떤 느낌인지 판단합니다.</p>
+        <h2 data-lang="animal_title">동물상 테스트</h2>
+        <p class="sub" data-lang="animal_subtitle">사진 파일을 업로드하면 강아지상/고양이상 중 어떤 느낌인지 판단합니다.</p>
       </div>
     </div>
 
     <div class="row">
-      <button class="primary" id="analyzeBtn">🐾 사진 분석</button>
-      <button class="ghost" id="clearAnimalBtn" disabled>🧹 사진 제거</button>
+      <button class="primary" id="analyzeBtn" data-lang="animal_analyze">🐾 사진 분석</button>
+      <button class="ghost" id="clearAnimalBtn" data-lang="animal_clear" disabled>🧹 사진 제거</button>
     </div>
 
     <div class="grid">
       <div class="card">
-        <div class="result-title">사진 업로드</div>
+        <div class="result-title" data-lang="animal_upload">사진 업로드</div>
         <div class="file-box" id="image-box">
           <div class="file-input">
             <input type="file" id="imageInput" accept="image/*">
           </div>
           <img id="preview" class="preview" alt="업로드한 사진 미리보기" hidden>
-          <div class="pill" id="imageHint">사진을 선택하면 미리보기가 표시됩니다.</div>
+          <div class="pill" id="imageHint" data-lang="animal_preview">사진을 선택하면 미리보기가 표시됩니다.</div>
         </div>
-        <div class="notice">※ 얼굴이 잘 보이는 사진일수록 정확도가 좋아요. 카메라 접근은 사용하지 않습니다.</div>
+        <div class="notice" data-lang="animal_notice">※ 얼굴이 잘 보이는 사진일수록 정확도가 좋아요. 카메라 접근은 사용하지 않습니다.</div>
       </div>
 
       <div class="card">
-        <div class="result-title">결과</div>
-        <div class="result-main" id="resultMain">대기 중</div>
+        <div class="result-title" data-lang="animal_result">결과</div>
+        <div class="result-main" id="resultMain" data-lang="animal_wait">대기 중</div>
         <div class="bars" id="label-container"></div>
         <div class="meta">
-          <span class="pill" id="statusAnimal">상태: 대기</span>
-          <span class="pill" id="timeInfoAnimal">업데이트: -</span>
-          <span class="pill">모델: 강아지상 · 고양이상</span>
+          <span class="pill" id="statusAnimal" data-lang="animal_status_wait">상태: 대기</span>
+          <span class="pill" id="timeInfoAnimal" data-lang="animal_update_time">업데이트: -</span>
+          <span class="pill" data-lang="animal_model">모델: 강아지상 · 고양이상</span>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    const html = document.documentElement;
-
-    const themeToggle = document.getElementById("themeToggle");
-    const pickBtn = document.getElementById("pickBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const clearBtn = document.getElementById("clearBtn");
-
-    const results = document.getElementById("results");
-    const statusEl = document.getElementById("status");
-    const timeInfo = document.getElementById("timeInfo");
-
-    let lastSets = null;
-
-    function setThemeToggleLabel() {
-      const isDark = html.dataset.theme === "dark";
-      themeToggle.textContent = isDark ? "🌙 다크모드" : "☀️ 화이트모드";
-    }
-
-    function pickOneSet(){
-      const s = new Set();
-      while(s.size < 6) s.add(Math.floor(Math.random() * 45) + 1);
-      return [...s].sort((a,b)=>a-b);
-    }
-
-    function pickFiveSets(){
-      const out = [];
-      for(let i=0;i<5;i++) out.push(pickOneSet());
-      return out;
-    }
-
-    function ballBg(n){
-      if(n<=10) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ffd84a,#ff8a00)";
-      if(n<=20) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#46d6ff,#2f6bff)";
-      if(n<=30) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#ff6b6b,#e7006a)";
-      if(n<=40) return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 36%), linear-gradient(180deg,#cfd3da,#6f7786)";
-      return "radial-gradient(circle at 30% 28%, rgba(255,255,255,.65), rgba(255,255,255,0) 36%), linear-gradient(180deg,#67ffb5,#17b86b)";
-    }
-
-    function render(sets){
-      results.innerHTML = "";
-      sets.forEach((nums, idx) => {
-        const row = document.createElement("div");
-        row.className = "set";
-
-        const label = document.createElement("div");
-        label.className = "label";
-        label.textContent = `${idx+1}번 게임`;
-
-        const balls = document.createElement("div");
-        balls.className = "balls";
-
-        nums.forEach(n => {
-          const b = document.createElement("div");
-          b.className = "ball";
-          b.textContent = n;
-          b.style.background = ballBg(n);
-          balls.appendChild(b);
-        });
-
-        row.appendChild(label);
-        row.appendChild(balls);
-        results.appendChild(row);
-      });
-    }
-
-    function updateMeta(){
-      const now = new Date();
-      timeInfo.textContent = "생성 시간: " + now.toLocaleString("ko-KR");
-      statusEl.textContent = "상태: 생성 완료 ✅";
-    }
-
-    async function copyToClipboard(text){
-      if(navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      const ok = document.execCommand("copy");
-      ta.remove();
-      return ok;
-    }
-
-    pickBtn.addEventListener("click", () => {
-      lastSets = pickFiveSets();
-      render(lastSets);
-      updateMeta();
-      copyBtn.disabled = false;
-    });
-
-    copyBtn.addEventListener("click", async () => {
-      if(!lastSets) return;
-      const text = lastSets.map((s,i)=>`${i+1}번: ${s.join(", ")}`).join("\n");
-      try{
-        await copyToClipboard(text);
-        statusEl.textContent = "상태: 복사 완료 📋✅";
-      }catch(e){
-        statusEl.textContent = "상태: 복사 실패 ❌";
-        alert("복사에 실패했습니다. 아래 텍스트를 직접 복사해 주세요:\n\n" + text);
-      }
-    });
-
-    clearBtn.addEventListener("click", () => {
-      lastSets = null;
-      results.innerHTML = `
-        <div class="set">
-          <div class="label">안내</div>
-          <div class="balls" style="color: var(--muted);">아직 생성된 번호가 없습니다.</div>
-        </div>
-      `;
-      copyBtn.disabled = true;
-      statusEl.textContent = "상태: 대기";
-      timeInfo.textContent = "생성 시간: -";
-    });
-
-    themeToggle.addEventListener("click", () => {
-      const isDark = html.dataset.theme === "dark";
-      html.dataset.theme = isDark ? "light" : "dark";
-      setThemeToggleLabel();
-    });
-
-    setThemeToggleLabel();
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <script src="languages.js"></script>
+  <script src="translator.js"></script>
+  <script src="lotto.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
